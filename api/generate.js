@@ -10,9 +10,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Prompt required" });
     }
 
-    // 🔥 GEMINI API CALL
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -30,7 +29,6 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Debug error if any
     if (!response.ok) {
       return res.status(500).json({
         gemini_error: data
