@@ -7,41 +7,38 @@ export default async function handler(req, res) {
     const { prompt } = req.body;
 
     if (!prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
+      return res.status(400).json({ error: "Prompt required" });
     }
 
-    // 👇 DEBUG: check if key exists
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        error: "Missing OPENAI_API_KEY"
-      });
-    }
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "user", content: prompt }
-        ]
-      })
-    });
+    // 🔥 GEMINI API CALL
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ]
+        })
+      }
+    );
 
     const data = await response.json();
 
-    // 👇 RETURN REAL ERROR
+    // Debug error if any
     if (!response.ok) {
       return res.status(500).json({
-        openai_error: data
+        gemini_error: data
       });
     }
 
     return res.status(200).json({
-      text: data.choices[0].message.content
+      text: data.candidates?.[0]?.content?.parts?.[0]?.text || "No response"
     });
 
   } catch (error) {
